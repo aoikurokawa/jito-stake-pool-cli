@@ -1,0 +1,67 @@
+[package]
+authors = ["Solana Maintainers <maintainers@solana.foundation>"]
+description = "SPL-Stake-Pool Command-line Utility"
+edition = "2018"
+homepage = "https://spl.solana.com/stake-pool"
+license = "Apache-2.0"
+name = "spl-stake-pool-cli"
+repository = "https://github.com/solana-labs/solana-program-library"
+version = "0.6.4"
+
+[dependencies]
+# borsh = "0.9"
+# clap = "2.33.3"
+# serde = "1.0.130"
+# serde_derive = "1.0.130"
+# serde_json = "1.0.68"
+# solana-account-decoder = "=1.9.5"
+# solana-clap-utils = "=1.9.5"
+# solana-cli-config = "=1.9.5"
+# solana-cli-output = "=1.9.5"
+# solana-client = "=1.9.5"
+# solana-logger = "=1.9.5"
+# solana-program = "=1.9.5"
+# solana-remote-wallet = "=1.9.5"
+# solana-sdk = "=1.9.5"
+# spl-associated-token-account = { version = "=1.0.5",  features = [ "no-entrypoint" ] }
+# spl-stake-pool = { version = "=0.6.4", features = [ "no-entrypoint" ] }
+# spl-token = { version = "=3.3.0", features = [ "no-entrypoint" ]  }
+# bs58 = "0.4.0"
+# bincode = "1.3.1"
+
+anyhow = "1.0.98"
+base64 = "0.22.1"
+bincode = "1.3.1"
+borsh = { version = "1.5.7", features = ["derive"] }
+bytemuck = { version = "1.16.3", features = ["min_const_generics"] }
+chrono = "0.4.38"
+clap = { version = "4.5.16", features = ["derive", "env"] }
+clap-markdown = { version = "0.1.4" }
+env_logger = "0.10.2"
+fragmetric-cpi = "0.5.1"
+log = "0.4.22"
+shank = "0.4.2"
+solana-account-decoder = "2.2.1"
+solana-client = "2.2.1"
+solana-cli-config = "2.2.1"
+solana-program = "2.2.1"
+solana-program-test = "2.2.1"
+solana-remote-wallet = "2.2.1"
+solana-rpc-client = "2.2.1"
+solana-rpc-client-api = "2.2.1"
+solana-sdk = "2.2.1"
+spl-associated-token-account = { version = "6.0.0", features = ["no-entrypoint"] }
+spl-stake-pool = { version = "2.0.1", features = ["no-entrypoint"] }
+spl-token = { version = "7.0.0", features = ["no-entrypoint"] }
+toml = "0.8.22"
+tracing = "0.1.41"
+tracing-appender = "0.2.3"
+tracing-subscriber = "0.3.19"
+yellowstone-vixen = "0.3.0"
+yellowstone-vixen-core = "0.3.0"
+yellowstone-vixen-parser = "0.3.0"
+
+
+[[bin]]
+name = "spl-stake-pool"
+path = "src/main.rs"
