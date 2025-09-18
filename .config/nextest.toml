@@ -1,5 +1,0 @@
-[profile.default]
-retries = 2
-test-threads = "num-cpus"
-threads-required = 1
-fail-fast = false
