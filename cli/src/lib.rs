@@ -1,4 +1,3 @@
-use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig, instruction::Instruction, message::Message,
     signers::Signers, transaction::Transaction,
