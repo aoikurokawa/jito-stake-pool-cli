@@ -1,16 +1,16 @@
 [package]
-name = "jito-spl-stake-pool-cli"
+name = "jito-stake-pool-cli"
 description = "SPL-Stake-Pool Command-line Utility"
 license = "Apache-2.0"
 version = "0.0.1"
 edition = "2018"
 
 [lib]
-name = "jito_spl_stake_pool_cli"
+name = "jito_stake_pool_cli"
 path = "src/lib.rs"
 
 [[bin]]
-name = "jito-spl-stake-pool-cli"
+name = "jito-stake-pool-cli"
 path = "src/bin/main.rs"
 
 [dependencies]
@@ -35,6 +35,7 @@ solana-remote-wallet = { workspace = true }
 solana-rpc-client = { workspace = true }
 solana-rpc-client-api = { workspace = true }
 solana-sdk = { workspace = true }
+solana-system-interface = { workspace = true }
 spl-associated-token-account = { workspace = true }
 spl-stake-pool = { workspace = true }
 spl-stake-pool-legacy = { workspace = true }
