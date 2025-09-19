@@ -5,20 +5,20 @@ license = "Apache-2.0"
 version = "0.0.1"
 edition = "2018"
 
-[[bin]]
-name = "jito-spl-stake-pool-cli"
-path = "src/bin/main.rs"
-
 [lib]
 name = "jito_spl_stake_pool_cli"
 path = "src/lib.rs"
+
+[[bin]]
+name = "jito-spl-stake-pool-cli"
+path = "src/bin/main.rs"
 
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bincode = { workspace = true }
-borsh-legacy = { workspace = true }
 borsh = { workspace = true }
+borsh-legacy = { workspace = true }
 bytemuck = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
@@ -28,8 +28,8 @@ fragmetric-cpi = { workspace = true }
 jito-stake-pool-sdk = { workspace = true }
 log = { workspace = true }
 solana-account-decoder = { workspace = true }
-solana-client = { workspace = true }
 solana-cli-config = { workspace = true }
+solana-client = { workspace = true }
 solana-program = { workspace = true }
 solana-remote-wallet = { workspace = true }
 solana-rpc-client = { workspace = true }
