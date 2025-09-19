@@ -3,7 +3,7 @@ name = "jito-stake-pool-cli"
 description = "SPL-Stake-Pool Command-line Utility"
 license = "Apache-2.0"
 version = "0.0.1"
-edition = "2018"
+edition = "2024"
 
 [lib]
 name = "jito_stake_pool_cli"
@@ -20,13 +20,8 @@ bincode = { workspace = true }
 borsh = { workspace = true }
 borsh-legacy = { workspace = true }
 bytemuck = { workspace = true }
-chrono = { workspace = true }
 clap = { workspace = true }
-clap-markdown = { workspace = true }
-env_logger = { workspace = true }
-fragmetric-cpi = { workspace = true }
 jito-stake-pool-sdk = { workspace = true }
-log = { workspace = true }
 solana-account-decoder = { workspace = true }
 solana-cli-config = { workspace = true }
 solana-client = { workspace = true }
@@ -40,4 +35,3 @@ spl-associated-token-account = { workspace = true }
 spl-stake-pool = { workspace = true }
 spl-stake-pool-legacy = { workspace = true }
 spl-token = { workspace = true }
-toml = { workspace = true }
