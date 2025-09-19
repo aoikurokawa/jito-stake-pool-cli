@@ -1,10 +1,10 @@
 use std::{cmp::Ordering, process::exit, str::FromStr, sync::Arc};
 
+use anyhow::anyhow;
 use clap::{Args, Parser, Subcommand};
 use jito_spl_stake_pool_cli::{
     command::{
         add_validator::{command_vsa_add, AddValidatorArgs},
-        create_pool::CreatePoolArgs,
         increase_validator_stake::IncreaseValidatorStakeArgs,
     },
     config::JitoStakePoolCliConfig,
@@ -14,7 +14,6 @@ use solana_program::{
     borsh::{get_instance_packed_len, get_packed_len},
     instruction::Instruction,
     program_pack::Pack,
-    pubkey::Pubkey,
     stake,
 };
 // use solana_remote_wallet::remote_wallet::RemoteWalletManager;
@@ -23,7 +22,8 @@ use solana_sdk::{
     hash::Hash,
     message::Message,
     native_token::{self, Sol},
-    signature::{Keypair, Signer},
+    pubkey::Pubkey,
+    signature::{read_keypair_file, Keypair, Signer},
     signers::Signers,
     system_instruction,
     transaction::Transaction,
@@ -158,7 +158,7 @@ macro_rules! unique_signers {
 }
 
 // Helper function to parse pubkey from string
-fn parse_pubkey(s: &str) -> Result<Pubkey, Box<dyn std::error::Error>> {
+fn parse_pubkey(s: &str) -> anyhow::Result<Pubkey> {
     Pubkey::from_str(s).map_err(|e| e.into())
 }
 
@@ -167,33 +167,37 @@ fn get_signer_simple(
     keypair_path: Option<&str>,
     default_path: &str,
     // wallet_manager: &mut Option<Arc<RemoteWalletManager>>,
-) -> Box<dyn Signer> {
+) -> anyhow::Result<Box<Signer>> {
     let path = keypair_path.unwrap_or(default_path);
-    signer_from_path_with_config(
-        &clap::ArgMatches::default(), // This is a simplification - in real usage you'd need proper ArgMatches
-        path,
-        "keypair",
-        wallet_manager,
-        &SignerFromPathConfig {
-            allow_null_signer: false,
-        },
-    )
-    .unwrap_or_else(|e| {
-        eprintln!("error: {}", e);
-        exit(1);
-    })
+    let keypair = read_keypair_file(path).map_err(|e| anyhow!("Error"))?;
+
+    Ok(Box::new(keypair))
+
+    // signer_from_path_with_config(
+    //     &clap::ArgMatches::default(), // This is a simplification - in real usage you'd need proper ArgMatches
+    //     path,
+    //     "keypair",
+    //     wallet_manager,
+    //     &SignerFromPathConfig {
+    //         allow_null_signer: false,
+    //     },
+    // )
+    // .unwrap_or_else(|e| {
+    //     eprintln!("error: {}", e);
+    //     exit(1);
+    // })
 }
 
 // Include all the existing helper functions and command implementations here
 // (check_fee_payer_balance, check_stake_pool_fees, get_latest_blockhash, etc.)
 // ... [All the existing function implementations remain the same] ...
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // solana_logger::setup_with_default("solana=info");
 
     let cli = Cli::parse();
 
-    let mut wallet_manager = None;
+    // let mut wallet_manager = None;
     let cli_config = if let Some(config_file) = &cli.config_file {
         solana_cli_config::Config::load(config_file).unwrap_or_default()
     } else {
@@ -209,29 +213,29 @@ fn main() {
             cli.staker.as_deref(),
             &cli_config.keypair_path,
             // &mut wallet_manager,
-        );
+        )?;
 
         let funding_authority = cli
             .funding_authority
-            .map(|path| get_signer_simple(Some(&path), &cli_config.keypair_path));
+            .map(|path| get_signer_simple(Some(&path), &cli_config.keypair_path).unwrap());
 
         let manager = get_signer_simple(
             cli.manager.as_deref(),
             &cli_config.keypair_path,
             // &mut wallet_manager,
-        );
+        )?;
 
         let token_owner = get_signer_simple(
             cli.token_owner.as_deref(),
             &cli_config.keypair_path,
             // &mut wallet_manager,
-        );
+        )?;
 
         let fee_payer = get_signer_simple(
             cli.fee_payer.as_deref(),
             &cli_config.keypair_path,
             // &mut wallet_manager,
-        );
+        )?;
 
         // let output_format = match cli.output_format {
         //     Some(OutputFormatArg::Json) => OutputFormat::Json,
@@ -245,7 +249,7 @@ fn main() {
         //     }
         // };
 
-        Config {
+        JitoStakePoolCliConfig {
             rpc_client: RpcClient::new_with_commitment(json_rpc_url, CommitmentConfig::confirmed()),
             verbose: cli.verbose,
             // output_format,
@@ -322,7 +326,8 @@ fn main() {
             let stake_pool_address = parse_pubkey(&args.pool)?;
             let vote_account = parse_pubkey(&args.vote_account)?;
             let amount = args.amount.unwrap_or(0.0);
-            command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
+            Ok(())
+            // command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
         } // Commands::DecreaseValidatorStake(args) => {
           //     let stake_pool_address = parse_pubkey(&args.pool)?;
           //     let vote_account = parse_pubkey(&args.vote_account)?;
@@ -546,25 +551,27 @@ fn main() {
             exit(1);
         })
         .ok();
+
+    Ok(())
 }
 
 // All existing function implementations go here
 // You'll need to include all the command_* functions and helper functions from the original code
 
-fn check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(), Error> {
-    let balance = config.rpc_client.get_balance(&config.fee_payer.pubkey())?;
-    if balance < required_balance {
-        Err(format!(
-            "Fee payer, {}, has insufficient balance: {} required, {} available",
-            config.fee_payer.pubkey(),
-            Sol(required_balance),
-            Sol(balance)
-        )
-        .into())
-    } else {
-        Ok(())
-    }
-}
+// fn check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(), Error> {
+//     let balance = config.rpc_client.get_balance(&config.fee_payer.pubkey())?;
+//     if balance < required_balance {
+//         Err(format!(
+//             "Fee payer, {}, has insufficient balance: {} required, {} available",
+//             config.fee_payer.pubkey(),
+//             Sol(required_balance),
+//             Sol(balance)
+//         )
+//         .into())
+//     } else {
+//         Ok(())
+//     }
+// }
 
 const FEES_REFERENCE: &str = "Consider setting a minimal fee. \
                               See https://spl.solana.com/stake-pool/fees for more \
@@ -592,62 +599,47 @@ fn check_stake_pool_fees(
     Ok(())
 }
 
-fn send_transaction_no_wait(
-    config: &Config,
-    transaction: Transaction,
-) -> solana_client::client_error::Result<()> {
-    if config.dry_run {
-        let result = config.rpc_client.simulate_transaction(&transaction)?;
-        println!("Simulate result: {:?}", result);
-    } else {
-        let signature = config.rpc_client.send_transaction(&transaction)?;
-        println!("Signature: {}", signature);
-    }
-    Ok(())
-}
-
-fn send_transaction(
-    config: &Config,
-    transaction: Transaction,
-) -> solana_client::client_error::Result<()> {
-    if config.dry_run {
-        let result = config.rpc_client.simulate_transaction(&transaction)?;
-        println!("Simulate result: {:?}", result);
-    } else {
-        let signature = config
-            .rpc_client
-            .send_and_confirm_transaction_with_spinner(&transaction)?;
-        println!("Signature: {}", signature);
-    }
-    Ok(())
-}
-
-fn new_stake_account(
-    fee_payer: &Pubkey,
-    instructions: &mut Vec<Instruction>,
-    lamports: u64,
-) -> Keypair {
-    // Account for tokens not specified, creating one
-    let stake_receiver_keypair = Keypair::new();
-    let stake_receiver_pubkey = stake_receiver_keypair.pubkey();
-    println!(
-        "Creating account to receive stake {}",
-        stake_receiver_pubkey
-    );
-
-    instructions.push(
-        // Creating new account
-        system_instruction::create_account(
-            fee_payer,
-            &stake_receiver_pubkey,
-            lamports,
-            STAKE_STATE_LEN as u64,
-            &stake::program::id(),
-        ),
-    );
-
-    stake_receiver_keypair
-}
+// fn send_transaction_no_wait(
+//     config: &Config,
+//     transaction: Transaction,
+// ) -> solana_client::client_error::Result<()> {
+//     if config.dry_run {
+//         let result = config.rpc_client.simulate_transaction(&transaction)?;
+//         println!("Simulate result: {:?}", result);
+//     } else {
+//         let signature = config.rpc_client.send_transaction(&transaction)?;
+//         println!("Signature: {}", signature);
+//     }
+//     Ok(())
+// }
+//
+//
+// fn new_stake_account(
+//     fee_payer: &Pubkey,
+//     instructions: &mut Vec<Instruction>,
+//     lamports: u64,
+// ) -> Keypair {
+//     // Account for tokens not specified, creating one
+//     let stake_receiver_keypair = Keypair::new();
+//     let stake_receiver_pubkey = stake_receiver_keypair.pubkey();
+//     println!(
+//         "Creating account to receive stake {}",
+//         stake_receiver_pubkey
+//     );
+//
+//     instructions.push(
+//         // Creating new account
+//         system_instruction::create_account(
+//             fee_payer,
+//             &stake_receiver_pubkey,
+//             lamports,
+//             STAKE_STATE_LEN as u64,
+//             &stake::program::id(),
+//         ),
+//     );
+//
+//     stake_receiver_keypair
+// }
 
 // NOTE: You would need to include ALL the other command_* function implementations
 // from the original code here. I'm just showing a few key helper functions above

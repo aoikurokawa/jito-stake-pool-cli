@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use anyhow::anyhow;
 use bincode::deserialize;
-use borsh_legacy::BorshDeserialize;
+use borsh::BorshDeserialize;
 use solana_account_decoder::UiAccountEncoding;
 use solana_client::{
     client_error::ClientError,
@@ -10,12 +10,14 @@ use solana_client::{
     rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
     rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
 };
-use solana_program::{borsh::try_from_slice_unchecked, program_pack::Pack, pubkey::Pubkey, stake};
+use solana_program::{borsh::try_from_slice_unchecked, program_pack::Pack, stake};
+use solana_sdk::pubkey::Pubkey;
+use spl_stake_pool::state::{StakePool, ValidatorList};
 // use spl_stake_pool::{
 //     find_withdraw_authority_program_address,
 //     state::{StakePool, ValidatorList},
 // };
-use spl_stake_pool_legacy::state::{StakePool, ValidatorList};
+// use spl_stake_pool_legacy::state::ValidatorList;
 
 type Error = Box<dyn std::error::Error>;
 
@@ -39,46 +41,46 @@ pub fn get_validator_list(
     Ok(validator_list)
 }
 
-pub fn get_token_account(
-    rpc_client: &RpcClient,
-    token_account_address: &Pubkey,
-    expected_token_mint: &Pubkey,
-) -> Result<spl_token::state::Account, Error> {
-    let account_data = rpc_client.get_account_data(token_account_address)?;
-    let token_account = spl_token::state::Account::unpack_from_slice(account_data.as_slice())
-        .map_err(|err| format!("Invalid token account {}: {}", token_account_address, err))?;
-
-    if token_account.mint != *expected_token_mint {
-        Err(format!(
-            "Invalid token mint for {}, expected mint is {}",
-            token_account_address, expected_token_mint
-        )
-        .into())
-    } else {
-        Ok(token_account)
-    }
-}
-
-pub fn get_token_mint(
-    rpc_client: &RpcClient,
-    token_mint_address: &Pubkey,
-) -> Result<spl_token::state::Mint, Error> {
-    let account_data = rpc_client.get_account_data(token_mint_address)?;
-    let token_mint = spl_token::state::Mint::unpack_from_slice(account_data.as_slice())
-        .map_err(|err| format!("Invalid token mint {}: {}", token_mint_address, err))?;
-
-    Ok(token_mint)
-}
-
-pub(crate) fn get_stake_state(
-    rpc_client: &RpcClient,
-    stake_address: &Pubkey,
-) -> Result<stake::state::StakeState, Error> {
-    let account_data = rpc_client.get_account_data(stake_address)?;
-    let stake_state = deserialize(account_data.as_slice())
-        .map_err(|err| format!("Invalid stake account {}: {}", stake_address, err))?;
-    Ok(stake_state)
-}
+// pub fn get_token_account(
+//     rpc_client: &RpcClient,
+//     token_account_address: &Pubkey,
+//     expected_token_mint: &Pubkey,
+// ) -> Result<spl_token::state::Account, Error> {
+//     let account_data = rpc_client.get_account_data(token_account_address)?;
+//     let token_account = spl_token::state::Account::unpack_from_slice(account_data.as_slice())
+//         .map_err(|err| format!("Invalid token account {}: {}", token_account_address, err))?;
+//
+//     if token_account.mint != *expected_token_mint {
+//         Err(format!(
+//             "Invalid token mint for {}, expected mint is {}",
+//             token_account_address, expected_token_mint
+//         )
+//         .into())
+//     } else {
+//         Ok(token_account)
+//     }
+// }
+//
+// pub fn get_token_mint(
+//     rpc_client: &RpcClient,
+//     token_mint_address: &Pubkey,
+// ) -> Result<spl_token::state::Mint, Error> {
+//     let account_data = rpc_client.get_account_data(token_mint_address)?;
+//     let token_mint = spl_token::state::Mint::unpack_from_slice(account_data.as_slice())
+//         .map_err(|err| format!("Invalid token mint {}: {}", token_mint_address, err))?;
+//
+//     Ok(token_mint)
+// }
+//
+// pub(crate) fn get_stake_state(
+//     rpc_client: &RpcClient,
+//     stake_address: &Pubkey,
+// ) -> Result<stake::state::StakeState, Error> {
+//     let account_data = rpc_client.get_account_data(stake_address)?;
+//     let stake_state = deserialize(account_data.as_slice())
+//         .map_err(|err| format!("Invalid stake account {}: {}", stake_address, err))?;
+//     Ok(stake_state)
+// }
 
 // pub(crate) fn get_stake_pools(
 //     rpc_client: &RpcClient,

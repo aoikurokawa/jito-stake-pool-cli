@@ -10,9 +10,21 @@ pub mod client;
 pub mod command;
 pub mod config;
 
-// pub fn get_latest_blockhash(client: &RpcClient) -> Result<Hash, Error> {
-//     Ok()
-// }
+pub fn send_transaction(
+    config: &JitoStakePoolCliConfig,
+    transaction: Transaction,
+) -> solana_client::client_error::Result<()> {
+    if config.dry_run {
+        let result = config.rpc_client.simulate_transaction(&transaction)?;
+        println!("Simulate result: {:?}", result);
+    } else {
+        let signature = config
+            .rpc_client
+            .send_and_confirm_transaction_with_spinner(&transaction)?;
+        println!("Signature: {}", signature);
+    }
+    Ok(())
+}
 
 pub fn checked_transaction_with_signers<T: Signers>(
     config: &JitoStakePoolCliConfig,

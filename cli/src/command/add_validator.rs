@@ -1,14 +1,22 @@
 use std::str::FromStr;
 
+use borsh_legacy::BorshSerialize;
 use clap::Args;
-use solana_program::{instruction::AccountMeta, pubkey::Pubkey, stake, system_program, sysvar};
-use solana_sdk::instruction::Instruction;
-use spl_stake_pool_legacy::{find_stake_program_address, state::StakePool};
+// use solana_program::{instruction::AccountMeta, pubkey::Pubkey, stake, system_program, sysvar};
+use solana_sdk::{
+    instruction::{AccountMeta, Instruction},
+    pubkey::Pubkey,
+    stake, system_program, sysvar,
+};
+use spl_stake_pool::{find_stake_program_address, state::StakePool};
+use spl_stake_pool_legacy::instruction::StakePoolInstruction;
+// use spl_stake_pool_legacy::{find_stake_program_address, state::StakePool};
 
 use crate::{
     checked_transaction_with_signers,
     client::{get_stake_pool, get_validator_list},
     config::JitoStakePoolCliConfig,
+    send_transaction,
 };
 
 #[derive(Args)]
@@ -30,7 +38,7 @@ pub fn add_validator_to_pool_with_vote(
     let pool_withdraw_authority =
         find_withdraw_authority_program_address(program_id, stake_pool_address).0;
     let (stake_account_address, _) =
-        find_stake_program_address(program_id, vote_account_address, stake_pool_address);
+        find_stake_program_address(program_id, vote_account_address, stake_pool_address, None);
     add_validator_to_pool(
         program_id,
         stake_pool_address,
@@ -186,9 +194,10 @@ solana_program::declare_id!("SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy");
 pub fn command_vsa_add(
     config: &JitoStakePoolCliConfig,
     stake_pool_address: &Pubkey,
-    vote_account: &Pubkey,
+    vote_account_address: &Pubkey,
 ) -> anyhow::Result<()> {
-    let vote_account = Pubkey::new_from_array(vote_account.to_bytes());
+    let vote_account =
+        solana_program::pubkey::Pubkey::new_from_array(vote_account_address.to_bytes());
     // let (stake_account_address, _) =
     //     find_stake_program_address(&spl_stake_pool::id(), vote_account, stake_pool_address);
 
@@ -210,7 +219,7 @@ pub fn command_vsa_add(
 
     let validator_list = get_validator_list(&config.rpc_client, &validator_list)?;
 
-    if validator_list.contains(&vote_account) {
+    if validator_list.contains(&vote_account_address) {
         println!(
             "Stake pool already contains validator {}, ignoring",
             vote_account
@@ -222,7 +231,7 @@ pub fn command_vsa_add(
     //         command_update(config, stake_pool_address, false, false)?;
     //     }
     //
-    let mut signers = vec![config.fee_payer.as_ref(), config.staker.as_ref()];
+    let signers = vec![config.fee_payer.as_ref(), config.staker.as_ref()];
 
     let fee_payer = Pubkey::new_from_array(config.fee_payer.pubkey().to_bytes());
 
@@ -230,11 +239,11 @@ pub fn command_vsa_add(
     let transaction = checked_transaction_with_signers(
         config,
         &[add_validator_to_pool_with_vote(
-            &spl_stake_pool_legacy::id(),
+            &spl_stake_pool::id(),
             &stake_pool,
             stake_pool_address,
             &fee_payer,
-            &vote_account,
+            &vote_account_address,
         )],
         &signers,
     )?;
