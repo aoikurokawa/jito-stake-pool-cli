@@ -2,9 +2,10 @@ use std::{process::exit, str::FromStr};
 
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};
-use jito_spl_stake_pool_cli::{
+use jito_stake_pool_cli::{
     command::{
         add_validator::{command_vsa_add, AddValidatorArgs},
+        deposit_sol::{command_deposit_sol, DepositSolArgs},
         increase_validator_stake::{command_increase_validator_stake, IncreaseValidatorStakeArgs},
     },
     config::JitoStakePoolCliConfig,
@@ -19,7 +20,7 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
     pubkey::Pubkey,
-    signature::{read_keypair_file, Signer},
+    signature::{read_keypair_file, Keypair, Signer},
 };
 // use spl_associated_token_account::get_associated_token_address;
 // use spl_stake_pool::{
@@ -103,7 +104,8 @@ enum Commands {
 
     // Remove validator account from the stake pool. Must be signed by the pool staker.
     // RemoveValidator(RemoveValidatorArgs),
-    // Increase stake to a validator, drawing from the stake pool reserve. Must be signed by the pool staker.
+    //
+    /// Increase stake to a validator, drawing from the stake pool reserve. Must be signed by the pool staker.
     IncreaseValidatorStake(IncreaseValidatorStakeArgs),
     // Decrease stake to a validator, splitting from the active stake. Must be signed by the pool staker.
     // DecreaseValidatorStake(DecreaseValidatorStakeArgs),
@@ -113,8 +115,8 @@ enum Commands {
     // DepositStake(DepositStakeArgs),
     // /// Deposit all active stake accounts into the stake pool in exchange for pool tokens
     // DepositAllStake(DepositAllStakeArgs),
-    // /// Deposit SOL into the stake pool in exchange for pool tokens
-    // DepositSol(DepositSolArgs),
+    /// Deposit SOL into the stake pool in exchange for pool tokens
+    DepositSol(DepositSolArgs),
     // /// List stake accounts managed by this pool
     // List(ListArgs),
     // /// Updates all balances in the pool after validator stake accounts receive rewards.
@@ -176,10 +178,6 @@ fn get_signer_simple(
     //     exit(1);
     // })
 }
-
-// Include all the existing helper functions and command implementations here
-// (check_fee_payer_balance, check_stake_pool_fees, get_latest_blockhash, etc.)
-// ... [All the existing function implementations remain the same] ...
 
 fn main() -> anyhow::Result<()> {
     // solana_logger::setup_with_default("solana=info");
@@ -318,80 +316,79 @@ fn main() -> anyhow::Result<()> {
             command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
             // command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
         } // Commands::DecreaseValidatorStake(args) => {
-          //     let stake_pool_address = parse_pubkey(&args.pool)?;
-          //     let vote_account = parse_pubkey(&args.vote_account)?;
-          //     let amount = args.amount.unwrap_or(0.0);
-          //     command_decrease_validator_stake(&config, &stake_pool_address, &vote_account, amount)
-          // }
-          // Commands::SetPreferredValidator(args) => {
-          //     let stake_pool_address = parse_pubkey(&args.pool)?;
-          //     let preferred_type = match args.preferred_type {
-          //         PreferredType::Deposit => PreferredValidatorType::Deposit,
-          //         PreferredType::Withdraw => PreferredValidatorType::Withdraw,
-          //     };
-          //     let vote_account = args
-          //         .vote_account
-          //         .as_ref()
-          //         .map(|s| parse_pubkey(s))
-          //         .transpose()?;
-          //     command_set_preferred_validator(
-          //         &config,
-          //         &stake_pool_address,
-          //         preferred_type,
-          //         vote_account,
-          //     )
-          // }
-          // Commands::DepositStake(args) => {
-          //     let stake_pool_address = parse_pubkey(&args.pool)?;
-          //     let stake_account = parse_pubkey(&args.stake_account)?;
-          //     let token_receiver = args
-          //         .token_receiver
-          //         .as_ref()
-          //         .map(|s| parse_pubkey(s))
-          //         .transpose()?;
-          //     let referrer = args
-          //         .referrer
-          //         .as_ref()
-          //         .map(|s| parse_pubkey(s))
-          //         .transpose()?;
-          //     let withdraw_authority = get_signer_simple(
-          //         args.withdraw_authority.as_deref(),
-          //         &cli_config.keypair_path,
-          //         &mut wallet_manager,
-          //     );
-          //     command_deposit_stake(
-          //         &config,
-          //         &stake_pool_address,
-          //         &stake_account,
-          //         withdraw_authority,
-          //         &token_receiver,
-          //         &referrer,
-          //     )
-          // }
-          // Commands::DepositSol(args) => {
-          //     let stake_pool_address = parse_pubkey(&args.pool)?;
-          //     let token_receiver = args
-          //         .token_receiver
-          //         .as_ref()
-          //         .map(|s| parse_pubkey(s))
-          //         .transpose()?;
-          //     let referrer = args
-          //         .referrer
-          //         .as_ref()
-          //         .map(|s| parse_pubkey(s))
-          //         .transpose()?;
-          //     let from = args.from.map(|_| Keypair::new()); // Simplified keypair parsing
-          //     let amount = args.amount.unwrap_or(0.0);
-          //     command_deposit_sol(
-          //         &config,
-          //         &stake_pool_address,
-          //         &from,
-          //         &token_receiver,
-          //         &referrer,
-          //         amount,
-          //     )
-          // }
-          // Commands::List(args) => {
+        //     let stake_pool_address = parse_pubkey(&args.pool)?;
+        //     let vote_account = parse_pubkey(&args.vote_account)?;
+        //     let amount = args.amount.unwrap_or(0.0);
+        //     command_decrease_validator_stake(&config, &stake_pool_address, &vote_account, amount)
+        // }
+        // Commands::SetPreferredValidator(args) => {
+        //     let stake_pool_address = parse_pubkey(&args.pool)?;
+        //     let preferred_type = match args.preferred_type {
+        //         PreferredType::Deposit => PreferredValidatorType::Deposit,
+        //         PreferredType::Withdraw => PreferredValidatorType::Withdraw,
+        //     };
+        //     let vote_account = args
+        //         .vote_account
+        //         .as_ref()
+        //         .map(|s| parse_pubkey(s))
+        //         .transpose()?;
+        //     command_set_preferred_validator(
+        //         &config,
+        //         &stake_pool_address,
+        //         preferred_type,
+        //         vote_account,
+        //     )
+        // }
+        // Commands::DepositStake(args) => {
+        //     let stake_pool_address = parse_pubkey(&args.pool)?;
+        //     let stake_account = parse_pubkey(&args.stake_account)?;
+        //     let token_receiver = args
+        //         .token_receiver
+        //         .as_ref()
+        //         .map(|s| parse_pubkey(s))
+        //         .transpose()?;
+        //     let referrer = args
+        //         .referrer
+        //         .as_ref()
+        //         .map(|s| parse_pubkey(s))
+        //         .transpose()?;
+        //     let withdraw_authority = get_signer_simple(
+        //         args.withdraw_authority.as_deref(),
+        //         &cli_config.keypair_path,
+        //         &mut wallet_manager,
+        //     );
+        //     command_deposit_stake(
+        //         &config,
+        //         &stake_pool_address,
+        //         &stake_account,
+        //         withdraw_authority,
+        //         &token_receiver,
+        //         &referrer,
+        //     )
+        // }
+        Commands::DepositSol(args) => {
+            let stake_pool_address = parse_pubkey(&args.pool)?;
+            let token_receiver = args
+                .token_receiver
+                .as_ref()
+                .map(|s| parse_pubkey(s))
+                .transpose()?;
+            let referrer = args
+                .referrer
+                .as_ref()
+                .map(|s| parse_pubkey(s))
+                .transpose()?;
+            let from = args.from.map(|_| Keypair::new()); // Simplified keypair parsing
+            let amount = args.amount.unwrap_or(0.0);
+            command_deposit_sol(
+                &config,
+                &stake_pool_address,
+                &from,
+                &token_receiver,
+                &referrer,
+                amount,
+            )
+        } // Commands::List(args) => {
           //     let stake_pool_address = parse_pubkey(&args.pool)?;
           //     command_list(&config, &stake_pool_address)
           // }

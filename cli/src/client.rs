@@ -7,7 +7,7 @@ use borsh::BorshDeserialize;
 // };
 // use solana_program::{borsh::try_from_slice_unchecked, program_pack::Pack, stake};
 use solana_rpc_client::rpc_client::RpcClient;
-use solana_sdk::pubkey::Pubkey;
+use solana_sdk::{program_pack::Pack, pubkey::Pubkey};
 use spl_stake_pool::state::{StakePool, ValidatorList};
 // use spl_stake_pool::{
 //     find_withdraw_authority_program_address,
@@ -35,25 +35,26 @@ pub fn get_validator_list(
     Ok(validator_list)
 }
 
-// pub fn get_token_account(
-//     rpc_client: &RpcClient,
-//     token_account_address: &Pubkey,
-//     expected_token_mint: &Pubkey,
-// ) -> Result<spl_token::state::Account, Error> {
-//     let account_data = rpc_client.get_account_data(token_account_address)?;
-//     let token_account = spl_token::state::Account::unpack_from_slice(account_data.as_slice())
-//         .map_err(|err| format!("Invalid token account {}: {}", token_account_address, err))?;
-//
-//     if token_account.mint != *expected_token_mint {
-//         Err(format!(
-//             "Invalid token mint for {}, expected mint is {}",
-//             token_account_address, expected_token_mint
-//         )
-//         .into())
-//     } else {
-//         Ok(token_account)
-//     }
-// }
+pub fn get_token_account(
+    rpc_client: &RpcClient,
+    token_account_address: &Pubkey,
+    expected_token_mint: &Pubkey,
+) -> anyhow::Result<spl_token::state::Account> {
+    let account_data = rpc_client.get_account_data(token_account_address)?;
+    let token_account = spl_token::state::Account::unpack_unchecked(account_data.as_slice())
+        .map_err(|err| anyhow!("Invalid token account {}: {}", token_account_address, err))?;
+
+    if token_account.mint != *expected_token_mint {
+        Err(anyhow!(
+            "Invalid token mint for {}, expected mint is {}",
+            token_account_address,
+            expected_token_mint
+        )
+        .into())
+    } else {
+        Ok(token_account)
+    }
+}
 //
 // pub fn get_token_mint(
 //     rpc_client: &RpcClient,

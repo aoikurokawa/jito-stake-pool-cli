@@ -1,4 +1,5 @@
 pub mod add_validator;
+pub mod deposit_sol;
 // pub mod create_pool;
 pub mod increase_validator_stake;
 pub mod remove_validator;
@@ -62,22 +63,6 @@ pub mod remove_validator;
 //     referrer: Option<String>,
 // }
 //
-// #[derive(Args)]
-// struct DepositSolArgs {
-//     /// Stake pool address
-//     pool: String,
-//     /// Amount in SOL to deposit into the stake pool reserve account.
-//     amount: Option<f64>,
-//     /// Source account of funds. [default: cli config keypair]
-//     #[arg(long, value_name = "KEYPAIR")]
-//     from: Option<String>,
-//     /// Account to receive the minted pool tokens. Defaults to the token-owner's associated pool token account. Creates the account if it does not exist.
-//     #[arg(long = "token-receiver", value_name = "POOL_TOKEN_RECEIVER_ADDRESS")]
-//     token_receiver: Option<String>,
-//     /// Account to receive the referral fees for deposits. Defaults to the token receiver.
-//     #[arg(long, value_name = "REFERRER_TOKEN_ADDRESS")]
-//     referrer: Option<String>,
-// }
 //
 // #[derive(Args)]
 // struct ListArgs {
