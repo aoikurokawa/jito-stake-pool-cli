@@ -38,21 +38,15 @@ pub fn command_vsa_add(
     )
     .0;
 
-    println!(
-        "Adding stake account {}, delegated to {}",
-        stake_account_address, vote_account
-    );
+    println!("Adding stake account {stake_account_address}, delegated to {vote_account}",);
 
     let stake_pool = get_stake_pool(&config.rpc_client, stake_pool_address)?;
     let validator_list = Pubkey::new_from_array(stake_pool.validator_list.to_bytes());
 
     let validator_list = get_validator_list(&config.rpc_client, &validator_list)?;
 
-    if validator_list.contains(&vote_account_address) {
-        println!(
-            "Stake pool already contains validator {}, ignoring",
-            vote_account
-        );
+    if validator_list.contains(vote_account_address) {
+        eprintln!("Stake pool already contains validator {vote_account}, ignoring",);
         return Ok(());
     }
 
@@ -72,7 +66,7 @@ pub fn command_vsa_add(
             &stake_pool,
             stake_pool_address,
             &fee_payer,
-            &vote_account_address,
+            vote_account_address,
         )],
         &signers,
     )?;
