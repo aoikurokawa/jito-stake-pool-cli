@@ -26,6 +26,8 @@ solana-remote-wallet = "2.2.1"
 solana-rpc-client = "2.2.1"
 solana-rpc-client-api = "2.2.1"
 solana-sdk = "2.2.1"
+solana-stake-interface = "1.0.0"
+solana-system-interface = "1.0.0"
 spl-associated-token-account = { version = "6.0.0", features = ["no-entrypoint"] }
 spl-stake-pool = { version = "2.0.1", features = ["no-entrypoint"] }
 spl-stake-pool-legacy = { package = "spl-stake-pool", version = "0.6.4", features = ["no-entrypoint"] }

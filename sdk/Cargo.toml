@@ -6,5 +6,7 @@ edition = "2024"
 [dependencies]
 borsh-legacy = { workspace = true }
 solana-sdk = { workspace = true }
+solana-stake-interface = { workspace = true }
+solana-system-interface = { workspace = true }
 spl-stake-pool = { workspace = true }
 spl-stake-pool-legacy = { workspace = true }

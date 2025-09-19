@@ -39,7 +39,7 @@ pub fn command_increase_validator_stake(
         .find(vote_account)
         .ok_or(anyhow!("Vote account not found in validator list"))?;
 
-    let mut signers = vec![config.fee_payer.as_ref(), config.staker.as_ref()];
+    let signers = vec![config.fee_payer.as_ref(), config.staker.as_ref()];
     // unique_signers!(signers);
     let seed: u64 = validator_stake_info.transient_seed_suffix.into();
     let transaction = checked_transaction_with_signers(
