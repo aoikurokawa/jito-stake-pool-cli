@@ -12,15 +12,15 @@ pub mod config;
 pub fn send_transaction(
     config: &JitoStakePoolCliConfig,
     transaction: Transaction,
-) -> solana_client::client_error::Result<()> {
+) -> anyhow::Result<()> {
     if config.dry_run {
         let result = config.rpc_client.simulate_transaction(&transaction)?;
-        println!("Simulate result: {:?}", result);
+        println!("Simulate result: {result:?}");
     } else {
         let signature = config
             .rpc_client
             .send_and_confirm_transaction_with_spinner(&transaction)?;
-        println!("Signature: {}", signature);
+        println!("Signature: {signature}");
     }
     Ok(())
 }

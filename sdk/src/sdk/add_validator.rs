@@ -31,6 +31,7 @@ pub fn add_validator_to_pool_with_vote(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn add_validator_to_pool(
     program_id: &Pubkey,
     stake_pool: &Pubkey,
@@ -52,6 +53,7 @@ pub fn add_validator_to_pool(
         AccountMeta::new_readonly(sysvar::rent::id(), false),
         AccountMeta::new_readonly(sysvar::clock::id(), false),
         AccountMeta::new_readonly(sysvar::stake_history::id(), false),
+        #[allow(deprecated)]
         AccountMeta::new_readonly(solana_stake_interface::config::id(), false),
         AccountMeta::new_readonly(solana_system_interface::program::id(), false),
         AccountMeta::new_readonly(solana_stake_interface::program::id(), false),

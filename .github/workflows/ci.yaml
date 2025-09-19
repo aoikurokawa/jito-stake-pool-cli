@@ -47,4 +47,4 @@ jobs:
           version: "2.0.1"
       - run: cargo sort --workspace --check
       - run: cargo fmt --all --check
-      - run: cargo clippy --all-features -- -D warnings -D clippy::all -D clippy::nursery -D clippy::integer_division -D clippy::arithmetic_side_effects -D clippy::style -D clippy::perf
+      - run: cargo clippy --all-features

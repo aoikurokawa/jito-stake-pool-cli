@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use clap::Args;
 use jito_stake_pool_sdk::sdk::increase_validator_stake::increase_validator_stake_with_vote;
-use solana_sdk::{native_token, pubkey::Pubkey};
+use solana_sdk::{native_token::sol_str_to_lamports, pubkey::Pubkey};
 
 use crate::{
     checked_transaction_with_signers,
@@ -28,7 +28,7 @@ pub fn command_increase_validator_stake(
     vote_account: &Pubkey,
     amount: f64,
 ) -> anyhow::Result<()> {
-    let lamports = native_token::sol_to_lamports(amount);
+    let lamports = sol_str_to_lamports(&amount.to_string()).unwrap();
     // if !config.no_update {
     //     command_update(config, stake_pool_address, false, false)?;
     // }

@@ -1,16 +1,12 @@
-use std::collections::HashSet;
-
 use anyhow::anyhow;
-use bincode::deserialize;
 use borsh::BorshDeserialize;
-use solana_account_decoder::UiAccountEncoding;
-use solana_client::{
-    client_error::ClientError,
-    rpc_client::RpcClient,
-    rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
-    rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
-};
-use solana_program::{borsh::try_from_slice_unchecked, program_pack::Pack, stake};
+// use solana_client::{
+//     client_error::ClientError,
+//     rpc_client::RpcClient,
+//     rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
+// };
+// use solana_program::{borsh::try_from_slice_unchecked, program_pack::Pack, stake};
+use solana_rpc_client::rpc_client::RpcClient;
 use solana_sdk::pubkey::Pubkey;
 use spl_stake_pool::state::{StakePool, ValidatorList};
 // use spl_stake_pool::{
@@ -18,8 +14,6 @@ use spl_stake_pool::state::{StakePool, ValidatorList};
 //     state::{StakePool, ValidatorList},
 // };
 // use spl_stake_pool_legacy::state::ValidatorList;
-
-type Error = Box<dyn std::error::Error>;
 
 pub fn get_stake_pool(
     rpc_client: &RpcClient,

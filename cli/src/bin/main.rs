@@ -139,12 +139,12 @@ enum Commands {
 
 // const STAKE_STATE_LEN: usize = 200;
 
-macro_rules! unique_signers {
-    ($vec:ident) => {
-        $vec.sort_by_key(|l| l.pubkey());
-        $vec.dedup();
-    };
-}
+// macro_rules! unique_signers {
+//     ($vec:ident) => {
+//         $vec.sort_by_key(|l| l.pubkey());
+//         $vec.dedup();
+//     };
+// }
 
 // Helper function to parse pubkey from string
 fn parse_pubkey(s: &str) -> anyhow::Result<Pubkey> {
@@ -156,9 +156,9 @@ fn get_signer_simple(
     keypair_path: Option<&str>,
     default_path: &str,
     // wallet_manager: &mut Option<Arc<RemoteWalletManager>>,
-) -> anyhow::Result<Box<Signer>> {
+) -> anyhow::Result<Box<dyn Signer>> {
     let path = keypair_path.unwrap_or(default_path);
-    let keypair = read_keypair_file(path).map_err(|e| anyhow!("Error"))?;
+    let keypair = read_keypair_file(path).map_err(|e| anyhow!("Error: {e}"))?;
 
     Ok(Box::new(keypair))
 
@@ -536,7 +536,7 @@ fn main() -> anyhow::Result<()> {
 
     result
         .map_err(|err| {
-            eprintln!("{}", err);
+            eprintln!("{err}");
             exit(1);
         })
         .ok();
