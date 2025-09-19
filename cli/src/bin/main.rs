@@ -1,42 +1,34 @@
-use std::{cmp::Ordering, process::exit, str::FromStr, sync::Arc};
+use std::{process::exit, str::FromStr};
 
 use anyhow::anyhow;
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use jito_spl_stake_pool_cli::{
     command::{
         add_validator::{command_vsa_add, AddValidatorArgs},
-        increase_validator_stake::IncreaseValidatorStakeArgs,
+        increase_validator_stake::{command_increase_validator_stake, IncreaseValidatorStakeArgs},
     },
     config::JitoStakePoolCliConfig,
 };
 use solana_client::rpc_client::RpcClient;
-use solana_program::{
-    borsh::{get_instance_packed_len, get_packed_len},
-    instruction::Instruction,
-    program_pack::Pack,
-    stake,
-};
+// use solana_program::{
+//     borsh::{get_instance_packed_len, get_packed_len},
+//     program_pack::Pack,
+//     stake,
+// };
 // use solana_remote_wallet::remote_wallet::RemoteWalletManager;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
-    hash::Hash,
-    message::Message,
-    native_token::{self, Sol},
     pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair, Signer},
-    signers::Signers,
-    system_instruction,
-    transaction::Transaction,
+    signature::{read_keypair_file, Signer},
 };
 // use spl_associated_token_account::get_associated_token_address;
-use spl_stake_pool::state::ValidatorStakeInfo;
-use spl_stake_pool::{
-    self, find_stake_program_address, find_transient_stake_program_address,
-    find_withdraw_authority_program_address,
-    instruction::{FundingType, PreferredValidatorType},
-    state::{Fee, FeeType, StakePool, ValidatorList},
-    MINIMUM_ACTIVE_STAKE,
-};
+// use spl_stake_pool::{
+//     self, find_stake_program_address, find_transient_stake_program_address,
+//     find_withdraw_authority_program_address,
+//     instruction::{FundingType, PreferredValidatorType},
+//     state::{Fee, FeeType, StakePool, ValidatorList},
+//     MINIMUM_ACTIVE_STAKE,
+// };
 // use instruction::create_associated_token_account once ATA 1.0.5 is released
 #[allow(deprecated)]
 // use spl_associated_token_account::create_associated_token_account;
@@ -145,10 +137,7 @@ enum Commands {
     // ListAll,
 }
 
-type Error = Box<dyn std::error::Error>;
-type CommandResult = Result<(), Error>;
-
-const STAKE_STATE_LEN: usize = 200;
+// const STAKE_STATE_LEN: usize = 200;
 
 macro_rules! unique_signers {
     ($vec:ident) => {
@@ -326,7 +315,7 @@ fn main() -> anyhow::Result<()> {
             let stake_pool_address = parse_pubkey(&args.pool)?;
             let vote_account = parse_pubkey(&args.vote_account)?;
             let amount = args.amount.unwrap_or(0.0);
-            Ok(())
+            command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
             // command_increase_validator_stake(&config, &stake_pool_address, &vote_account, amount)
         } // Commands::DecreaseValidatorStake(args) => {
           //     let stake_pool_address = parse_pubkey(&args.pool)?;
@@ -573,31 +562,31 @@ fn main() -> anyhow::Result<()> {
 //     }
 // }
 
-const FEES_REFERENCE: &str = "Consider setting a minimal fee. \
-                              See https://spl.solana.com/stake-pool/fees for more \
-                              information about fees and best practices. If you are \
-                              aware of the possible risks of a stake pool with no fees, \
-                              you may force pool creation with the --unsafe-fees flag.";
+// const FEES_REFERENCE: &str = "Consider setting a minimal fee. \
+//                               See https://spl.solana.com/stake-pool/fees for more \
+//                               information about fees and best practices. If you are \
+//                               aware of the possible risks of a stake pool with no fees, \
+//                               you may force pool creation with the --unsafe-fees flag.";
 
-fn check_stake_pool_fees(
-    epoch_fee: &Fee,
-    withdrawal_fee: &Fee,
-    deposit_fee: &Fee,
-) -> Result<(), Error> {
-    if epoch_fee.numerator == 0 || epoch_fee.denominator == 0 {
-        return Err(format!("Epoch fee should not be 0. {}", FEES_REFERENCE,).into());
-    }
-    let is_withdrawal_fee_zero = withdrawal_fee.numerator == 0 || withdrawal_fee.denominator == 0;
-    let is_deposit_fee_zero = deposit_fee.numerator == 0 || deposit_fee.denominator == 0;
-    if is_withdrawal_fee_zero && is_deposit_fee_zero {
-        return Err(format!(
-            "Withdrawal and deposit fee should not both be 0. {}",
-            FEES_REFERENCE,
-        )
-        .into());
-    }
-    Ok(())
-}
+// fn check_stake_pool_fees(
+//     epoch_fee: &Fee,
+//     withdrawal_fee: &Fee,
+//     deposit_fee: &Fee,
+// ) -> Result<(), Error> {
+//     if epoch_fee.numerator == 0 || epoch_fee.denominator == 0 {
+//         return Err(format!("Epoch fee should not be 0. {}", FEES_REFERENCE,).into());
+//     }
+//     let is_withdrawal_fee_zero = withdrawal_fee.numerator == 0 || withdrawal_fee.denominator == 0;
+//     let is_deposit_fee_zero = deposit_fee.numerator == 0 || deposit_fee.denominator == 0;
+//     if is_withdrawal_fee_zero && is_deposit_fee_zero {
+//         return Err(format!(
+//             "Withdrawal and deposit fee should not both be 0. {}",
+//             FEES_REFERENCE,
+//         )
+//         .into());
+//     }
+//     Ok(())
+// }
 
 // fn send_transaction_no_wait(
 //     config: &Config,

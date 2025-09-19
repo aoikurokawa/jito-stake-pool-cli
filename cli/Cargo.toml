@@ -25,6 +25,7 @@ clap = { workspace = true }
 clap-markdown = { workspace = true }
 env_logger = { workspace = true }
 fragmetric-cpi = { workspace = true }
+jito-stake-pool-sdk = { workspace = true }
 log = { workspace = true }
 solana-account-decoder = { workspace = true }
 solana-client = { workspace = true }
