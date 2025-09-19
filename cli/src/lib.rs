@@ -58,7 +58,10 @@ fn add_associated_token_account(
     // Account for tokens not specified, creating one
     let account = get_associated_token_address(owner, mint);
     if get_token_account(&config.rpc_client, &account, mint).is_err() {
-        println!("Creating associated token account {} to receive stake pool tokens of mint {}, owned by {}", account, mint, owner);
+        println!(
+            "Creating associated token account {} to receive stake pool tokens of mint {}, owned by {}",
+            account, mint, owner
+        );
 
         let min_account_balance = config
             .rpc_client
@@ -75,7 +78,10 @@ fn add_associated_token_account(
 
         *rent_free_balances += min_account_balance;
     } else {
-        println!("Using existing associated token account {} to receive stake pool tokens of mint {}, owned by {}", account, mint, owner);
+        println!(
+            "Using existing associated token account {} to receive stake pool tokens of mint {}, owned by {}",
+            account, mint, owner
+        );
     }
 
     account

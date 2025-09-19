@@ -49,8 +49,7 @@ pub fn get_token_account(
             "Invalid token mint for {}, expected mint is {}",
             token_account_address,
             expected_token_mint
-        )
-        .into())
+        ))
     } else {
         Ok(token_account)
     }

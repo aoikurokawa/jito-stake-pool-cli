@@ -4,9 +4,9 @@ use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 use jito_stake_pool_cli::{
     command::{
-        add_validator::{command_vsa_add, AddValidatorArgs},
-        deposit_sol::{command_deposit_sol, DepositSolArgs},
-        increase_validator_stake::{command_increase_validator_stake, IncreaseValidatorStakeArgs},
+        add_validator::{AddValidatorArgs, command_vsa_add},
+        deposit_sol::{DepositSolArgs, command_deposit_sol},
+        increase_validator_stake::{IncreaseValidatorStakeArgs, command_increase_validator_stake},
     },
     config::JitoStakePoolCliConfig,
 };
@@ -20,7 +20,7 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
     pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair, Signer},
+    signature::{Keypair, Signer, read_keypair_file},
 };
 // use spl_associated_token_account::get_associated_token_address;
 // use spl_stake_pool::{
