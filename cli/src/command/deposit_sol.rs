@@ -61,8 +61,7 @@ pub fn command_deposit_sol(
             "Not enough SOL to deposit into pool: {}.\nMaximum deposit amount is {} SOL.",
             Sol(amount),
             Sol(from_balance)
-        )
-        .into());
+        ));
     }
 
     let stake_pool = get_stake_pool(&config.rpc_client, stake_pool_address)?;
