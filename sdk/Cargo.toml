@@ -1,0 +1,10 @@
+[package]
+name = "jito-stake-pool-sdk"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+borsh-legacy = { workspace = true }
+solana-sdk = { workspace = true }
+spl-stake-pool = { workspace = true }
+spl-stake-pool-legacy = { workspace = true }
